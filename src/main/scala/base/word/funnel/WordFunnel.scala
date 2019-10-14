@@ -2,15 +2,20 @@ package base.word.funnel
 
 import OrderedSubset._
 
-import scala.collection.Set
+import scala.collection.{Set, mutable}
 
 final class WordFunnel(wordList: Set[String]) {
 
+  private val memoisedChildren: mutable.Map[String, Set[String]] =
+    mutable.Map.empty
+
   protected def childrenOfWord(starterWord: String,
-                               possibleWords: Set[String]): Set[String] = {
-    def isChild(x: String) = x != starterWord && x.orderedSubsetOf(starterWord)
-    possibleWords filter isChild
-  }
+                               possibleWords: Set[String]): Set[String] =
+    memoisedChildren.getOrElseUpdate(starterWord, {
+      def isChild(x: String) =
+        x != starterWord && x.orderedSubsetOf(starterWord)
+      possibleWords filter isChild
+    })
 
   def wordFunnel(starterWord: String): Seq[String] = {
     def make(starterWord: String,
